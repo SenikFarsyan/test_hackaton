@@ -6,7 +6,10 @@ let maleYear,
   femaleMonth,
   femaleDay,
   conceptionYear,
-  conceptionMonth;
+  conceptionMonth,
+  menstrualCicleStart,
+  menstrualCycleLength,
+  ovulationPeriod = {};
 //data
 let femaleYearData,
   femaleMonthData,
@@ -20,6 +23,10 @@ let femaleYearData,
   maleConceptionMonthData,
   maleConceptionDayData,
   maleFinalSumData;
+
+  let maleInexConceptionDays = [];
+  let femaleInexConceptionDays = [];
+
 //get days in the month according month and year
 function daysInMonth(month, year) {
   return new Date(year, month, 0).getDate();
@@ -93,7 +100,28 @@ document
   });
 document
   .querySelector('input[name="femaleMonth"]')
-  .addEventListener('change', e => (femaleMonth = e.target.value));
+  .addEventListener('change', e => {
+    femaleMonth = e.target.value;
+
+    var request = new XMLHttpRequest();
+    request.open('GET', 'db/maleFinalSum.json', true);
+    request.send();
+    request.onreadystatechange = function() {
+      if (request.readyState === 4 && request.status === 200) {
+        maleFinalSumData = JSON.parse(request.responseText);
+      }
+    };
+
+    var requestMaleFinal = new XMLHttpRequest();
+    requestMaleFinal.open('GET', 'db/femaleFinalSum.json', true);
+    requestMaleFinal.send();
+    requestMaleFinal.onreadystatechange = function() {
+      if (requestMaleFinal.readyState === 4 && requestMaleFinal.status === 200) {
+        femaleFinalSumData = JSON.parse(requestMaleFinal.responseText);
+      }
+    };
+
+  });
 document
   .querySelector('input[name="femaleDay"]')
   .addEventListener('change', e => {
@@ -164,6 +192,24 @@ requestFemaleYear.onreadystatechange = function() {
     femaleYearData = JSON.parse(requestFemaleYear.responseText);
   }
 };
+var requestFemaleConceptionDay = new XMLHttpRequest();
+requestFemaleConceptionDay.open('GET', 'db/femaleConceptionDay.json', true);
+requestFemaleConceptionDay.send();
+requestFemaleConceptionDay.onreadystatechange = function() {
+  if (requestFemaleConceptionDay.readyState === 4 && requestFemaleConceptionDay.status === 200) {
+    femaleConceptionDayData = JSON.parse(requestFemaleConceptionDay.responseText);
+  }
+};
+
+var requestMaleConceptionDay = new XMLHttpRequest();
+requestMaleConceptionDay.open('GET', 'db/maleConceptionDay.json', true);
+requestMaleConceptionDay.send();
+requestMaleConceptionDay.onreadystatechange = function() {
+  if (requestMaleConceptionDay.readyState === 4 && requestMaleConceptionDay.status === 200) {
+    maleConceptionDayData = JSON.parse(requestMaleConceptionDay.responseText);
+  }
+};
+
 var requestmaleYear = new XMLHttpRequest();
 requestmaleYear.open('GET', 'db/male1.json', true);
 requestmaleYear.send();
@@ -188,12 +234,56 @@ function getDayIndex(data, number) {
   });
   return index;
 }
+function calcFinal(data, num) {
+  let keyIndex;
+  Object.keys(data).forEach(key => {
+    if(data[key].includes(+num)){
+      keyIndex = key;
+    }
+  });
+  return keyIndex;
+}
+Date.prototype.addDays = function(days) {
+  var date = new Date(this.valueOf());
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
+document.querySelector('#menstrualCicleStart').addEventListener('change', (e) => {
+  menstrualCicleStart = new Date(e.target.value) ;
+});
+
+document.querySelector('#cycleLength').addEventListener('change', (e) => {
+  menstrualCycleLength = e.target.value;
+  menstruationDays = +menstrualCicleStart.getDate() + +menstrualCycleLength - 15;
+  let ovluationPeriodStart = menstrualCicleStart.addDays(menstruationDays);
+  let ovaluationPeriodEnd = ovluationPeriodStart.addDays(7);
+
+  ovulationPeriod.start = ovluationPeriodStart;
+  ovulationPeriod.end = ovaluationPeriodEnd;
+  ovulationPeriod.daysArr = [];
+  for(let i= ovulationPeriod.start.getDate(); i <= ovulationPeriod.end.getDate(); i++) {
+    ovulationPeriod.daysArr.push(i);
+  }
+
+  maleInexConceptionDays= [];
+  femaleInexConceptionDays=[];  
+
+  for(let i = 0; i < ovulationPeriod.daysArr.length; i++ ) {
+
+    maleInexConceptionDays.push(getDayIndex(maleConceptionDayData, ovulationPeriod.daysArr[i] ) +1);
+    femaleInexConceptionDays.push(getDayIndex(femaleConceptionDayData, ovulationPeriod.daysArr[i] ));
+  }
+
+
+});
 
 sumbit.addEventListener('click', e => {
+  document.querySelector('.color-description').style.display = "block";
   e.preventDefault();
   //male table indexes
   let maleIndexYear = getYearIndex(maleYearData, conceptionYear, maleYear);
-  let maleIndexMonth = maleConceptionMonthData[`${maleMonth}`];
+  let maleIndexMonth = maleMonthData[`${maleMonth}`];
   let maleIndexDay = getDayIndex(maleDayData, maleDay);
   let maleindexYearMonthconception =
     maleConceptionMonthData[`${conceptionMonth}`];
@@ -204,7 +294,7 @@ sumbit.addEventListener('click', e => {
     conceptionYear,
     femaleYear
   );
-  let femaleIndexMonth = femaleConceptionMonthData[`${femaleMonth}`];
+  let femaleIndexMonth = femaleMonthData[`${femaleMonth}`];
   let femaleIndexDay = getDayIndex(femaleDayData, femaleDay);
   let femaleindexYearMonthconception =
     femaleConceptionMonthData[`${conceptionMonth}`];
@@ -219,6 +309,55 @@ sumbit.addEventListener('click', e => {
     +femaleIndexMonth +
     +femaleIndexDay +
     +femaleindexYearMonthconception;
-  console.log(maleIndexSum);
-  console.log(femaleIndexSum);
+
+    let newArrboy = [];
+    let newArrgirl = [];
+    let finalMaleResult = [];
+    let finalFemaleResult = [];
+    let calendarMale = [];
+    let calendarFemale = [];
+
+    for(let i = 0; i < ovulationPeriod.daysArr.length; i++ ) {
+      newArrboy.push( maleIndexSum + maleInexConceptionDays[i]);
+      newArrgirl.push( femaleIndexSum + femaleInexConceptionDays[i]);
+      finalMaleResult.push(calcFinal(maleFinalSumData, newArrboy[i]));
+      finalFemaleResult.push(calcFinal(femaleFinalSumData, newArrgirl[i]));
+      if(finalMaleResult[i] > finalFemaleResult[i]) {
+        calendarMale.push(`${ovulationPeriod.start.getMonth() + 1}/${ovulationPeriod.daysArr[i]}/${ovulationPeriod.start.getFullYear()}`);
+      }else if(finalMaleResult[i] < finalFemaleResult[i]){
+        
+
+        calendarFemale.push(`${ovulationPeriod.start.getMonth() + 1}/${ovulationPeriod.daysArr[i]}/${ovulationPeriod.start.getFullYear()}`);
+      }
+    }
+    console.log(ovulationPeriod.start);
+    console.log(ovulationPeriod.start.getMonth() + 1);
+    console.log(ovulationPeriod.start.getFullYear());
+
+    let dates1 = [...calendarMale];
+    let dates2 = [...calendarFemale];
+    
+    $('#calendar').datepicker({
+        dateFormat: 'dd/mm/yy',
+        defaultDate: ovulationPeriod.start, // this line is for testing
+        beforeShowDay: highlightDays
+    });  
+
+    function highlightDays(date) {
+      for (var i = 0; i < dates1.length; i++) {
+          if (new Date(dates1[i]).toString() == date.toString()) {
+              return [true, 'highlightMale'];
+          }
+      }
+      for (var i = 0; i < dates2.length; i++) {
+        if (new Date(dates2[i]).toString() == date.toString()) {
+            return [true, 'highlightFeMale'];
+        }
+    }
+      return [true, ''];
+  }
+  
 });
+
+
+

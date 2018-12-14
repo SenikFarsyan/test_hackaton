@@ -11,10 +11,17 @@
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
       crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/smoothness/jquery-ui.css">
+    
   </head>
   <body>
-    <div class="container">
-      <form>
+      <header>
+          <h1 class="pt-5">Child Gender Planning</h1>
+        </header>
+    <div id="form">
+        <div class="fish" id="fish"></div>
+        <div class="fish" id="fish2"></div>
+      <form class="mt-5" id="waterform">
         <div class="form-group row">
           <label for="date-input-men" class="col-2 col-form-label"
             >Birth date of Men</label
@@ -31,7 +38,7 @@
             />
           </div>
           <div class="col-3">
-            Month 1-12
+            <p class="mt-2">Month 1-12</p>
             <input
               class="form-control"
               type="number"
@@ -42,7 +49,7 @@
             />
           </div>
           <div class="col-3">
-            Day 1-31
+            <p class="mt-2">Day 1-31</p>
             <input
               class="form-control"
               type="number"
@@ -69,7 +76,7 @@
             />
           </div>
           <div class="col-3">
-            Month 1-12
+            <p class="mt-2">Month 1-12</p>
             <input
               class="form-control"
               type="number"
@@ -80,7 +87,7 @@
             />
           </div>
           <div class="col-3">
-            Day 1-31
+            <p class="mt-2">Day 1-31</p>
             <input
               class="form-control"
               type="number"
@@ -118,9 +125,67 @@
             />
           </div>
         </div>
+        <div class="form-group row">
+            <label for="menstrualCicleStart" class="col-2 col-form-label"
+              >Calculate Ovaluation period</label
+            >
+            <div class="col-5">
+                Menstrual periud starts at
+              <input
+                class="form-control"
+                type="date"
+                name="menstrualCicleStart"
+                min="2018"
+                max="2046"
+                id="menstrualCicleStart"
+              />
+            </div>
+            <div class="col-5">
+                Cycle Length (Days)
+                <select id="cycleLength" class="form-control">
+                    <option selected>Choose...</option>
+                    <option value=22 >22 days</option>
+                    <option value=23 >23 days</option>
+                    <option value=24 >24 days</option>
+                    <option value=25 >25 days</option>
+                    <option value=26 >26 days</option>
+                    <option value=27 >27 days</option>
+                    <option  selected value=28 >28 days</option>
+                    <option value=29 >29 days</option>
+                    <option value=30 >30 days</option>
+                    <option value=31 >31 days</option>
+                    <option value=32 >32 days</option>
+                    <option value=33 >33 days</option>
+                    <option value=34 >34 days</option>
+                    <option value=35 >35 days</option>
+                    <option value=36 >36 days</option>
+                  </select>
+              
+            </div>
+          </div>
         <button type="submit" class="btn btn-primary">Check</button>
       </form>
+      <div id="calendar" class="center">
+        <div class="color-description">
+          <div class="row mb-2">
+            <div class="co-lxs-1">
+                <span>boy</span>
+            </div>
+            <div class="col-xs-1"><div class="boy"></div></div>  
+          </div>
+          <div class="row">
+            <div class="col-xs-1">
+                <span>girl</span>
+            </div>
+            <div class="col-xs-1">
+              <div class="girl"></div>
+            </div>
+          </div>  
+        </div>
+      </div>
     </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script> 
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script> 
     <script src="app.js"></script>
   </body>
 </html>
